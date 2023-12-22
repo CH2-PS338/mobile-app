@@ -23,5 +23,5 @@ data class DataItem(
 	val mealId: Int? = null,
 
 	@field:SerializedName("meals_name")
-	val mealsName: List<String>? = null
+	val mealsName: String? = null
 )

@@ -96,9 +96,7 @@ fun ActivityLogList(meals: List<DataItem>?) {
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = meal.mealsName?.joinToString(", ") ?: "Unknown",
-                    style = MaterialTheme.typography.bodyLarge
+                Text(text = meal.mealsName ?: "Unknown", style = MaterialTheme.typography.bodyLarge
                 )
                 Text(text = meal.createdAt ?: "Unknown", style = MaterialTheme.typography.bodyLarge)
             }

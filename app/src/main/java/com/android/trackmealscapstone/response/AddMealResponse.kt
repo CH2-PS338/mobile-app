@@ -44,7 +44,7 @@ data class Meals(
 	val proteins: Int? = null,
 
 	@field:SerializedName("meals_name")
-	val mealsName: List<String>? = null,
+	val mealsName: String? = null,
 
 	@field:SerializedName("calories")
 	val calories: Int? = null,
