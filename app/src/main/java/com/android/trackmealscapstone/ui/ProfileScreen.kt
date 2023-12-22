@@ -81,7 +81,6 @@ fun ProfileTopAppBar(navController: NavController, context: Context) {
 
 @Composable
 fun ProfileContent(paddingValues: PaddingValues, context: Context) {
-    // Retrieve the user's full name from shared preferences
     val fullName = getUserNameFromStorage(context)
 
     Column {
