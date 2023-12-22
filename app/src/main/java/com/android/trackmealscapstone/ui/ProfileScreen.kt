@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.android.trackmealscapstone.R
+import com.android.trackmealscapstone.api.ApiConfig.getUserNameFromStorage
 import com.android.trackmealscapstone.ui.theme.orangePrimary
 
 @Composable
@@ -182,9 +183,4 @@ private fun clearLoginState(context: Context) {
         remove("REMEMBER_ME")
         apply()
     }
-}
-
-fun getUserNameFromStorage(context: Context): String {
-    val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
-    return sharedPreferences.getString("USER_NAME", "User") ?: "User"
 }

@@ -6,7 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiConfig {
-    private const val BASE_URL = "https://backend-dot-capstone-trackmeals-405419.et.r.appspot.com/"
+    private const val BASE_URL = "https://backend-dot-capstone-trackmeals-405419.et.r.appspot.com"
 
     fun getApiService(context: Context): ApiService {
         val client = OkHttpClient.Builder()
@@ -28,8 +28,19 @@ object ApiConfig {
         return retrofit.create(ApiService::class.java)
     }
 
-    private fun getTokenFromStorage(context: Context): String {
+    fun getTokenFromStorage(context: Context): String {
         val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
         return sharedPreferences.getString("JWT_TOKEN", "") ?: ""
+    }
+
+    fun getUserIdFromStorage(context: Context): Int {
+        val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+        // Using a default value of -1 or any other value to indicate that the user ID is not found.
+        return sharedPreferences.getInt("userId", 1)
+    }
+
+    fun getUserNameFromStorage(context: Context): String {
+        val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("USER_NAME", "User") ?: "User"
     }
 }
