@@ -17,7 +17,7 @@ data class AddMealResponse(
 data class UserMealData(
 
 	@field:SerializedName("userId")
-	val userId: String? = null,
+	val userId: Int? = null,
 
 	@field:SerializedName("meals")
 	val meals: Meals? = null
@@ -44,7 +44,7 @@ data class Meals(
 	val proteins: Int? = null,
 
 	@field:SerializedName("meals_name")
-	val mealsName: String? = null,
+	val mealsName: List<String>? = null,
 
 	@field:SerializedName("calories")
 	val calories: Int? = null,

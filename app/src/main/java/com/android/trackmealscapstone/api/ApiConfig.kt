@@ -35,7 +35,6 @@ object ApiConfig {
 
     fun getUserIdFromStorage(context: Context): Int {
         val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
-        // Using a default value of -1 or any other value to indicate that the user ID is not found.
         return sharedPreferences.getInt("userId", 1)
     }
 
