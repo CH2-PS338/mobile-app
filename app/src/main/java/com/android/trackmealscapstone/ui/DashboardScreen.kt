@@ -1,5 +1,6 @@
 package com.android.trackmealscapstone.ui
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.Canvas
@@ -24,21 +25,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.trackmealscapstone.ui.theme.orangePrimary
 import com.android.trackmealscapstone.viewmodel.HealthFactViewModel
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.platform.LocalUriHandler
 
 
 @Composable
 fun DashboardScreen(navController: NavController) {
     val context = LocalContext.current
-    val healthFactViewModel = viewModel { HealthFactViewModel(context)}
+    val healthFactViewModel = viewModel {
+        HealthFactViewModel(context.applicationContext as Context)
+    }
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
