@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -163,6 +164,7 @@ fun ProfileAvatar(fullName: String, onChangePictureClick: () -> Unit, viewModel:
 
         Button(
             onClick = onChangePictureClick,
+            colors = ButtonDefaults.buttonColors(containerColor = orangePrimary),
             modifier = Modifier.width(110.dp), // Add horizontal padding
         ) {
             Text("Change Picture", style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center)
