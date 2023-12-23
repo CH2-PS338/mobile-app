@@ -30,6 +30,7 @@ class GallerySelectionActivity : ComponentActivity() {
 
             NavHost(navController, startDestination = "profile") {
                 composable("profile") {
+                    // Here we pass the lambda to ProfileScreen
                     ProfileScreen(navController, onChangePictureClick = { selectImageFromGallery() }, viewModel = profileViewModel)
                 }
             }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -40,8 +41,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -107,15 +110,17 @@ fun ProfileContent(paddingValues: PaddingValues, fullName: String, imageUri: Uri
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Add item for the profile component with the retrieved full name
-            item { ProfileAvatar(fullName = fullName, imageUri = imageUri, onChangePictureClick = onChangePictureClick, viewModel = viewModel) }
+            item { ProfileAvatar(fullName = fullName, onChangePictureClick = onChangePictureClick, viewModel = viewModel) }
             item { CircularGraph(percentage = 0.50F, calories = 10) }
         }
     }
 }
 
 @Composable
-fun ProfileAvatar(fullName: String, imageUri: Uri?, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
+fun ProfileAvatar(fullName: String, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(16.dp))
+
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -131,42 +136,45 @@ fun ProfileAvatar(fullName: String, imageUri: Uri?, onChangePictureClick: () -> 
             Image(
                 painter = imagePainter,
                 contentDescription = "Profile Picture",
-                modifier = Modifier.size(160.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
+        }
 
-            if (imageUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = imageUri),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(160.dp)
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.avatar_icon),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(160.dp)
-                )
-            }
-        }
-        Button(onClick = onChangePictureClick) {
-            Text("Change Picture")
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+
         Spacer(modifier = Modifier.height(5.dp))
+
         Text(
             text = "Hello There!",
             style = MaterialTheme.typography.titleSmall
         )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = fullName,
             style = MaterialTheme.typography.headlineLarge
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = onChangePictureClick,
+            modifier = Modifier.width(110.dp), // Add horizontal padding
+        ) {
+            Text("Change Picture", style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center)
+        }
     }
 }
+
 
 @Composable
 fun CircularGraph(percentage: Float, calories: Int) {
     Box(contentAlignment = Alignment.Center) {
-        Spacer(modifier = Modifier.height(320.dp))
+        Spacer(modifier = Modifier.height(300.dp))
         Canvas(modifier = Modifier.size(260.dp)) {
             val strokeWidth = 20.dp.toPx()
             val radius = (size.minDimension - strokeWidth) / 2
