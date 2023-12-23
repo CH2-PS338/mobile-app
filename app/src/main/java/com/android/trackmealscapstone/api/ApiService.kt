@@ -8,13 +8,17 @@ import com.android.trackmealscapstone.response.LoginResponse
 import com.android.trackmealscapstone.response.LogoutResponse
 import com.android.trackmealscapstone.response.RegisterResponse
 import com.android.trackmealscapstone.response.TokenResponse
+import com.android.trackmealscapstone.response.UploadPhotoResponse
 import com.android.trackmealscapstone.response.UserMealResponse
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.Response
 import retrofit2.http.Header
+import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 interface ApiService {
@@ -46,4 +50,11 @@ interface ApiService {
 
     @GET("facthealths")
     suspend fun getFactHealths() : Response<FactHealthsResponse>
+
+    @PUT("uploadfoto/{id}")
+    suspend fun updatePhotoProfile(
+        @Path("id") userId: Int,
+        @Header("Authorization") authToken: String,
+        @Part file: MultipartBody.Part
+    ) : Response<UploadPhotoResponse>
 }
