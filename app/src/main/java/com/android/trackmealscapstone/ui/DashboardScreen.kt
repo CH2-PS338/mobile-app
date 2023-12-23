@@ -8,26 +8,18 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalDensity
-import com.android.trackmealscapstone.R
 import com.android.trackmealscapstone.ui.theme.orangePrimary
-import com.android.trackmealscapstone.ui.theme.orangeSecondary
 
 @Composable
 fun DashboardScreen(navController: NavController) {
@@ -128,12 +120,11 @@ fun NutritionList() {
                 .padding(start = 16.dp, top = 16.dp)
         )
         val nutritionData = listOf(
-            Pair("Energy", "1 Joule"),
-            Pair("Calory", "300 kcal"),
-            Pair("Fat", "0.5 g"),
-            Pair("Protein", "1 g"),
-            Pair("Mineral", "100 ml"),
-            Pair("Vitamin", "5 g")
+            Pair("Calories", "180 kcal"),
+            Pair("Carbs", "39.8 g"),
+            Pair("Proteins", "3 g"),
+            Pair("Fats", "1.47 g"),
+            Pair("Minerals", "64 mg"),
         )
 
         nutritionData.forEach { (nutrition, amount) ->
@@ -153,6 +144,7 @@ fun NutritionList() {
 
 @Composable
 fun HealthFactHeadline() {
+    Spacer(modifier = Modifier.height(16.dp))
     Column {
         Text(
             text = "Fact Health",

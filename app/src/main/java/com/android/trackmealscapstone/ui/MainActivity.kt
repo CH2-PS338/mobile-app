@@ -174,7 +174,7 @@ fun RememberMeCheckbox(
 fun DefaultPreview() {
     TrackMealsCapstoneTheme {
         val navController = rememberNavController()
-        ScanScreen(navController)
+        DashboardScreen(navController)
     }
 }
 
