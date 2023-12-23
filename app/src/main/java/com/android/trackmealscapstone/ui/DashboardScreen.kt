@@ -19,19 +19,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.trackmealscapstone.ui.theme.orangePrimary
+import com.android.trackmealscapstone.viewmodel.HealthFactViewModel
 
 @Composable
 fun DashboardScreen(navController: NavController) {
+    val context = LocalContext.current
+    val healthFactViewModel = viewModel { HealthFactViewModel(context)}
+
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        DashboardContent(innerPadding)
+        DashboardContent(innerPadding, healthFactViewModel)
     }
 }
 
 @Composable
-fun DashboardContent(paddingValues: PaddingValues) {
+fun DashboardContent(paddingValues: PaddingValues, viewModel: HealthFactViewModel) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -39,7 +45,7 @@ fun DashboardContent(paddingValues: PaddingValues) {
     ) {
         item { YourProgressGraph() }
         item { NutritionList() }
-        item { HealthFactHeadline() }
+        item { HealthFactHeadline(viewModel) }
     }
 }
 
@@ -143,7 +149,7 @@ fun NutritionList() {
 }
 
 @Composable
-fun HealthFactHeadline() {
+fun HealthFactHeadline(viewModel: HealthFactViewModel) {
     Spacer(modifier = Modifier.height(16.dp))
     Column {
         Text(
@@ -154,8 +160,8 @@ fun HealthFactHeadline() {
                 .padding(start = 16.dp, top = 16.dp)
         )
         Text(
-            text = "Human have 1600 neurons",
-            style = MaterialTheme.typography.bodyLarge,
+            text = viewModel.healthFact,
+            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier
                 .align(Alignment.Start)
                 .padding(horizontal = 16.dp, vertical = 8.dp)

@@ -3,7 +3,7 @@ package com.android.trackmealscapstone.api
 import com.android.trackmealscapstone.data.UserLoginData
 import com.android.trackmealscapstone.data.UserRegistrationData
 import com.android.trackmealscapstone.response.AddMealResponse
-import com.android.trackmealscapstone.response.FactHealthResponse
+import com.android.trackmealscapstone.response.FactHealthsResponse
 import com.android.trackmealscapstone.response.LoginResponse
 import com.android.trackmealscapstone.response.LogoutResponse
 import com.android.trackmealscapstone.response.RegisterResponse
@@ -44,8 +44,6 @@ interface ApiService {
         @Body meals_name: List<String>
     ): Response<AddMealResponse>
 
-    @GET()
-    suspend fun getFactHealth(
-
-    ) : Response<FactHealthResponse>
+    @GET("facthealths")
+    suspend fun getFactHealths() : Response<FactHealthsResponse>
 }
