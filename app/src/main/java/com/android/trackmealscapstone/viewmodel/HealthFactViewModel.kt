@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 
 class HealthFactViewModel(context: Context) : ViewModel() {
     var healthFact: String = "Loading..."
+    var healthFactSourceUrl: String? = null
     private val apiService = ApiConfig.getApiService(context)
 
     init {
@@ -22,6 +23,7 @@ class HealthFactViewModel(context: Context) : ViewModel() {
                     val data = response.body()!!.data
                     if (!data.isNullOrEmpty()) {
                         healthFact = data.first()?.fact ?: "No fact available"
+                        healthFactSourceUrl = data.first()?.source
                     }
                 } else {
                     healthFact = "Failed to load fact"
