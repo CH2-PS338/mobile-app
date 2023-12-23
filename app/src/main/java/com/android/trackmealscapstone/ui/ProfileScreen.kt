@@ -1,8 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.android.trackmealscapstone.ui
 
 import android.content.Context
+import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +34,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -41,21 +44,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.android.trackmealscapstone.R
 import com.android.trackmealscapstone.api.ApiConfig.getUserNameFromStorage
 import com.android.trackmealscapstone.ui.theme.orangePrimary
+import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
     val context = LocalContext.current
+    val fullName = getUserNameFromStorage(context)
+
     Scaffold(
         topBar = { ProfileTopAppBar(navController = navController, context = context) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        ProfileContent(innerPadding, context)
+        ProfileContent(innerPadding, fullName, viewModel.profileImageUri, onChangePictureClick, viewModel)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTopAppBar(navController: NavController, context: Context) {
     val topPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
@@ -90,9 +98,7 @@ fun ProfileTopAppBar(navController: NavController, context: Context) {
 }
 
 @Composable
-fun ProfileContent(paddingValues: PaddingValues, context: Context) {
-    val fullName = getUserNameFromStorage(context)
-
+fun ProfileContent(paddingValues: PaddingValues, fullName: String, imageUri: Uri?, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
     Column {
         LazyColumn(
             modifier = Modifier
@@ -101,28 +107,49 @@ fun ProfileContent(paddingValues: PaddingValues, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Add item for the profile component with the retrieved full name
-            item { ProfileAvatar(fullName = fullName) }
+            item { ProfileAvatar(fullName = fullName, imageUri = imageUri, onChangePictureClick = onChangePictureClick, viewModel = viewModel) }
             item { CircularGraph(percentage = 0.50F, calories = 10) }
         }
     }
 }
 
 @Composable
-fun ProfileAvatar(fullName: String) {
+fun ProfileAvatar(fullName: String, imageUri: Uri?, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(200.dp)
+                .clip(CircleShape)
                 .background(Color.White, CircleShape)
                 .padding(3.dp)
         ) {
+            val imagePainter = viewModel.profileImageUri?.let { uri ->
+                rememberAsyncImagePainter(uri)
+            } ?: painterResource(id = R.drawable.avatar_icon)
+
             Image(
-                painter = painterResource(id = R.drawable.avatar_icon),
+                painter = imagePainter,
                 contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(160.dp)
+                modifier = Modifier.size(160.dp)
             )
+
+            if (imageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUri),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.size(160.dp)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.avatar_icon),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.size(160.dp)
+                )
+            }
+        }
+        Button(onClick = onChangePictureClick) {
+            Text("Change Picture")
         }
         Spacer(modifier = Modifier.height(5.dp))
         Text(

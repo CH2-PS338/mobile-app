@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,11 +40,21 @@ import androidx.navigation.compose.rememberNavController
 import com.android.trackmealscapstone.R
 import com.android.trackmealscapstone.ui.theme.TrackMealsCapstoneTheme
 import com.android.trackmealscapstone.ui.theme.orangePrimary
+import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
+    private lateinit var imagePickerLauncher: ActivityResultLauncher<String>
+    private lateinit var profileViewModel: ProfileViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = getColor(R.color.orange_primary)
+
+        profileViewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
+        imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { profileViewModel.updateProfileImage(it) }
+        }
+
         setContent {
             TrackMealsCapstoneTheme {
                 val navController = rememberNavController()
@@ -58,12 +71,18 @@ class MainActivity : ComponentActivity() {
                     composable("dashboard") { DashboardScreen(navController) }
                     composable("scan") { ScanScreen(navController) }
                     composable("activity_log") { ActivityLogScreen(navController) }
-                    composable("profile") { ProfileScreen(navController) }
+                    composable("profile") {
+                        ProfileScreen(navController, onChangePictureClick = { selectImageFromGallery() }, viewModel = profileViewModel)
+                    }
                     composable("login") { LoginScreen(navController) }
                     composable("register") { RegisterScreen(navController) }
                 }
             }
         }
+    }
+
+    private fun selectImageFromGallery() {
+        imagePickerLauncher.launch("image/*")
     }
 }
 
@@ -174,7 +193,7 @@ fun RememberMeCheckbox(
 fun DefaultPreview() {
     TrackMealsCapstoneTheme {
         val navController = rememberNavController()
-        ProfileScreen(navController)
+        ProfileScreen(navController, onChangePictureClick = {}, viewModel = ProfileViewModel())
     }
 }
 
