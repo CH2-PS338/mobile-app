@@ -19,7 +19,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
@@ -56,10 +59,11 @@ fun ProfileScreen(navController: NavController) {
 @Composable
 fun ProfileTopAppBar(navController: NavController, context: Context) {
     val topPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
+
     SmallTopAppBar(
         title = {},
         colors = TopAppBarDefaults.smallTopAppBarColors(
-            containerColor = Color.White
+            containerColor = orangePrimary
         ),
         actions = {
             TextButton(
@@ -71,9 +75,15 @@ fun ProfileTopAppBar(navController: NavController, context: Context) {
                         }
                         launchSingleTop = true
                     }
-                },
-                content = { Text(text = "Logout", color = orangePrimary) }
-            )
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ExitToApp,
+                    contentDescription = "Logout",
+                    tint = Color.White,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
         },
         modifier = Modifier.padding(top = topPadding)
     )
