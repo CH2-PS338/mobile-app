@@ -31,31 +31,38 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.platform.LocalUriHandler
-
+import com.android.trackmealscapstone.data.NutritionData
+import com.android.trackmealscapstone.data.foodNutritionMap
 
 @Composable
-fun DashboardScreen(navController: NavController) {
+fun DashboardScreen(navController: NavController, scannedFoodName: String? = null) {
     val context = LocalContext.current
     val healthFactViewModel = viewModel {
         HealthFactViewModel(context.applicationContext as Context)
     }
 
+    val nutritionData = if (scannedFoodName != null) {
+        foodNutritionMap[scannedFoodName] ?: NutritionData(0, 0.0, 0.0, 0.0, 0.0)
+    } else {
+        NutritionData(0, 0.0, 0.0, 0.0, 0.0)
+    }
+
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        DashboardContent(innerPadding, healthFactViewModel)
+        DashboardContent(innerPadding, healthFactViewModel, nutritionData)
     }
 }
 
 @Composable
-fun DashboardContent(paddingValues: PaddingValues, viewModel: HealthFactViewModel) {
+fun DashboardContent(paddingValues: PaddingValues, viewModel: HealthFactViewModel, nutritionData: NutritionData) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        item { YourProgressGraph() }
-        item { NutritionList() }
+        item { YourProgressGraph(nutritionData) }
+        item { NutritionList(nutritionData) }
         item { HealthFactHeadline(viewModel) }
     }
 }
@@ -67,7 +74,7 @@ data class NavigationItem(
 )
 
 @Composable
-fun YourProgressGraph() {
+fun YourProgressGraph(nutritionData: NutritionData) {
     Column {
         Text(
             text = "Your progress",
@@ -83,21 +90,21 @@ fun YourProgressGraph() {
                 .background(color = Color.White, shape = RoundedCornerShape(16.dp))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                // Sample data for the graph
-                val nutritionData = listOf(
-                    Pair(50, "Calories"),
-                    Pair(70, "Carbs"),
-                    Pair(80, "Proteins"),
-                    Pair(60, "Fats"),
-                    Pair(90, "Minerals")
+                val nutritionValues = listOf(
+                    nutritionData.calories.toDouble(),
+                    nutritionData.proteins,
+                    nutritionData.fats,
+                    nutritionData.carbs,
+                    nutritionData.minerals
                 )
-                val maxData = nutritionData.maxOf { it.first }.toFloat()
+                val maxData = nutritionValues.maxOf { it }
+                val nutritionLabels = listOf("Calories", "Proteins", "Fats", "Carbs", "Minerals")
 
-                nutritionData.forEach { (value, label) ->
+                nutritionLabels.zip(nutritionValues).forEach { (label, value) ->
                     BoxWithConstraints(modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)) {
-                        val barWidth = (value / maxData) * constraints.maxWidth
+                        val barWidth = (value / maxData) * constraints.maxWidth.toDouble()
                         Canvas(modifier = Modifier
                             .height(30.dp)
                             .fillMaxWidth()) {
@@ -109,7 +116,7 @@ fun YourProgressGraph() {
                             drawRoundRect(
                                 color = orangePrimary,
                                 topLeft = Offset.Zero,
-                                size = Size(barWidth, 30.dp.toPx()),
+                                size = Size(barWidth.toFloat(), 30.dp.toPx()),
                                 cornerRadius = CornerRadius(8.dp.toPx())
                             )
                         }
@@ -129,9 +136,8 @@ fun YourProgressGraph() {
     }
 }
 
-
 @Composable
-fun NutritionList() {
+fun NutritionList(nutritionData: NutritionData) {
     Column {
         Text(
             text = "Amount",
@@ -140,22 +146,23 @@ fun NutritionList() {
                 .align(Alignment.Start)
                 .padding(start = 16.dp, top = 16.dp)
         )
-        val nutritionData = listOf(
-            Pair("Calories", "180 kcal"),
-            Pair("Carbs", "39.8 g"),
-            Pair("Proteins", "3 g"),
-            Pair("Fats", "1.47 g"),
-            Pair("Minerals", "64 mg"),
+        // Creating a list of Pair<String, String> for nutrition labels and their values
+        val nutritionInfoList = listOf(
+            "Calories" to "${nutritionData.calories} kcal",
+            "Proteins" to "${nutritionData.proteins} g",
+            "Fats" to "${nutritionData.fats} g",
+            "Carbs" to "${nutritionData.carbs} g",
+            "Minerals" to "${nutritionData.minerals} mg"
         )
 
-        nutritionData.forEach { (nutrition, amount) ->
+        nutritionInfoList.forEach { (nutritionLabel, amount) ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = nutrition, style = MaterialTheme.typography.bodyMedium)
+                Text(text = nutritionLabel, style = MaterialTheme.typography.bodyMedium)
                 Text(text = amount, style = MaterialTheme.typography.bodyMedium)
             }
             Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(start = 16.dp, end = 16.dp))

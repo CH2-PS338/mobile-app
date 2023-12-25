@@ -77,9 +77,8 @@ object TensorFLowHelper {
             }
         }
         val classes = arrayOf(
-            "Alpukat",
-            "Telur Rebus",
             "Nasi Putih",
+            "Telur Rebus",
             "Telur Goreng",
             "Dada Ayam",
             "Tumis Kangkung",
@@ -87,6 +86,7 @@ object TensorFLowHelper {
             "Salmon",
             "Nasi Merah",
             "Jeruk",
+            "Alpukat",
             "Sayur Bayam")
         callback.invoke(classes[maxPos])
 
