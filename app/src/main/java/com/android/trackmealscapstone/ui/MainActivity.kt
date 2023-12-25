@@ -56,6 +56,8 @@ class MainActivity : ComponentActivity() {
         val factory = ProfileViewModelFactory(apiService)
         profileViewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
 
+        profileViewModel.loadProfileImageUri(this)
+
         imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { profileViewModel.updateProfileImage(it) }
         }
