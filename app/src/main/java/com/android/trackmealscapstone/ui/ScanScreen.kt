@@ -101,12 +101,14 @@ fun ScanScreen(navController: NavController) {
     if (showNotification.value) {
         FoodScannedDialog(
             scannedFoodName = scannedFoodName.value,
-            onDismiss = { showNotification.value = false },
+            onDismiss = {
+                showNotification.value = false
+                navController.navigate("dashboardWithFood/${scannedFoodName.value}") // Use the correct route
+            },
             onViewHistoryClick = { navController.navigate("activity_log") }
         )
     }
 }
-
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

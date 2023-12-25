@@ -50,7 +50,7 @@ android {
 }
 
 dependencies {
-    val camerax_version = "1.3.0-beta01"
+    val camerax_version = "1.3.1"
     val accompanist_version = "0.31.2-alpha"
 
     implementation("androidx.camera:camera-camera2:$camerax_version")

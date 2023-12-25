@@ -35,7 +35,7 @@ import com.android.trackmealscapstone.data.NutritionData
 import com.android.trackmealscapstone.data.foodNutritionMap
 
 @Composable
-fun DashboardScreen(navController: NavController, scannedFoodName: String? = null) {
+fun DashboardScreen(navController: NavController, scannedFoodName: String?) {
     val context = LocalContext.current
     val healthFactViewModel = viewModel {
         HealthFactViewModel(context.applicationContext as Context)

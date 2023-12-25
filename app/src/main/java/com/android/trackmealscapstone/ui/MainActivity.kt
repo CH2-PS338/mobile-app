@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -37,6 +36,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.android.trackmealscapstone.R
 import com.android.trackmealscapstone.api.ApiConfig
 import com.android.trackmealscapstone.ui.theme.TrackMealsCapstoneTheme
@@ -75,7 +75,18 @@ class MainActivity : ComponentActivity() {
                 }
 
                 NavHost(navController = navController, startDestination = startDestination) {
-                    composable("dashboard") { DashboardScreen(navController) }
+                    composable("dashboard") {
+                        DashboardScreen(navController, null) // No scanned food name
+                    }
+
+                    composable(
+                        "dashboardWithFood/{scannedFoodName}",
+                        arguments = listOf(navArgument("scannedFoodName") { defaultValue = "" })
+                    ) { backStackEntry ->
+                        val scannedFoodName = backStackEntry.arguments?.getString("scannedFoodName")
+                        DashboardScreen(navController, scannedFoodName)
+                    }
+
                     composable("scan") { ScanScreen(navController) }
                     composable("activity_log") { ActivityLogScreen(navController) }
                     composable("profile") {
@@ -194,15 +205,6 @@ fun RememberMeCheckbox(
         Text(text = "Remember Me")
     }
 }
-
-//@Preview(showBackground = true, apiLevel = 31)
-//@Composable
-//fun DefaultPreview() {
-//    TrackMealsCapstoneTheme {
-//        val navController = rememberNavController()
-//        ProfileScreen(navController, onChangePictureClick = {}, viewModel = ProfileViewModel(), context)
-//    }
-//}
 
 private fun isUserLoggedIn(sharedPreferences: SharedPreferences): Boolean {
     val rememberMe = sharedPreferences.getBoolean("REMEMBER_ME", false)
