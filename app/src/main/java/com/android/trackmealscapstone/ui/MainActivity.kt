@@ -43,6 +43,7 @@ import com.android.trackmealscapstone.ui.theme.TrackMealsCapstoneTheme
 import com.android.trackmealscapstone.ui.theme.orangePrimary
 import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 import com.android.trackmealscapstone.viewmodel.ProfileViewModelFactory
+import com.android.trackmealscapstone.viewmodel.SharedViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var imagePickerLauncher: ActivityResultLauncher<String>
@@ -62,6 +63,8 @@ class MainActivity : ComponentActivity() {
             uri?.let { profileViewModel.updateProfileImage(it) }
         }
 
+        val sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+
         setContent {
             TrackMealsCapstoneTheme {
                 val navController = rememberNavController()
@@ -76,7 +79,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(navController = navController, startDestination = startDestination) {
                     composable("dashboard") {
-                        DashboardScreen(navController, null) // No scanned food name
+                        DashboardScreen(navController, sharedViewModel) // No scanned food name
                     }
 
                     composable(
@@ -84,10 +87,10 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument("scannedFoodName") { defaultValue = "" })
                     ) { backStackEntry ->
                         val scannedFoodName = backStackEntry.arguments?.getString("scannedFoodName")
-                        DashboardScreen(navController, scannedFoodName)
+                        DashboardScreen(navController, sharedViewModel)
                     }
 
-                    composable("scan") { ScanScreen(navController) }
+                    composable("scan") { ScanScreen(navController, sharedViewModel) }
                     composable("activity_log") { ActivityLogScreen(navController) }
                     composable("profile") {
                         ProfileScreen(navController, onChangePictureClick = { selectImageFromGallery() }, viewModel = profileViewModel)

@@ -57,12 +57,13 @@ import com.android.trackmealscapstone.api.ApiConfig
 import com.android.trackmealscapstone.api.ApiConfig.getUserIdFromStorage
 import com.android.trackmealscapstone.tensorflow.TensorFLowHelper
 import com.android.trackmealscapstone.ui.theme.orangeSecondary
+import com.android.trackmealscapstone.viewmodel.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ScanScreen(navController: NavController) {
+fun ScanScreen(navController: NavController, sharedViewModel: SharedViewModel) {
     val showNotification = remember { mutableStateOf(false) }
     val scannedFoodName = remember { mutableStateOf("") }
 
@@ -74,6 +75,8 @@ fun ScanScreen(navController: NavController) {
         scannedFoodName.value = result
         showNotification.value = true
         Log.d("InferenceResult", "Detected food: $result")
+
+        sharedViewModel.updateLastScannedFood(result)
 
         val userId = getUserIdFromStorage(context)
         val authToken = "Bearer ${ApiConfig.getTokenFromStorage(context)}"

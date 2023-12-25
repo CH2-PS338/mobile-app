@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -32,20 +33,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.platform.LocalUriHandler
 import com.android.trackmealscapstone.data.NutritionData
-import com.android.trackmealscapstone.data.foodNutritionMap
+import com.android.trackmealscapstone.viewmodel.SharedViewModel
+import androidx.compose.runtime.livedata.observeAsState
 
 @Composable
-fun DashboardScreen(navController: NavController, scannedFoodName: String?) {
+fun DashboardScreen(navController: NavController, sharedViewModel: SharedViewModel) {
     val context = LocalContext.current
     val healthFactViewModel = viewModel {
         HealthFactViewModel(context.applicationContext as Context)
     }
 
-    val nutritionData = if (scannedFoodName != null) {
-        foodNutritionMap[scannedFoodName] ?: NutritionData(0, 0.0, 0.0, 0.0, 0.0)
-    } else {
-        NutritionData(0, 0.0, 0.0, 0.0, 0.0)
-    }
+    val nutritionData by sharedViewModel.lastScannedFood.observeAsState(NutritionData(0, 0.0, 0.0, 0.0, 0.0))
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
@@ -112,7 +110,13 @@ fun YourProgressGraph(nutritionData: NutritionData) {
                     BoxWithConstraints(modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)) {
-                        val barWidth = percentage * constraints.maxWidth.toDouble()
+
+                        val percentageAsFloat = percentage.toFloat()
+                        val barWidth: Float = if (percentageAsFloat > 0f) {
+                            (percentageAsFloat * constraints.maxWidth.toFloat())
+                        } else {
+                            0f
+                        }
 
                         Canvas(modifier = Modifier
                             .height(30.dp)
@@ -122,12 +126,14 @@ fun YourProgressGraph(nutritionData: NutritionData) {
                                 size = Size(constraints.maxWidth.toFloat(), 30.dp.toPx()),
                                 cornerRadius = CornerRadius(8.dp.toPx())
                             )
-                            drawRoundRect(
-                                color = orangePrimary,
-                                topLeft = Offset.Zero,
-                                size = Size(barWidth.toFloat(), 30.dp.toPx()),
-                                cornerRadius = CornerRadius(8.dp.toPx())
-                            )
+                            if (barWidth > 0f) {
+                                drawRoundRect(
+                                    color = orangePrimary,
+                                    topLeft = Offset.Zero,
+                                    size = Size(barWidth, 30.dp.toPx()),
+                                    cornerRadius = CornerRadius(8.dp.toPx())
+                                )
+                            }
                         }
                         // Display value on the bar
                         val displayValue = (percentage * when(label) {
