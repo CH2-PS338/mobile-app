@@ -38,9 +38,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.trackmealscapstone.R
+import com.android.trackmealscapstone.api.ApiConfig
 import com.android.trackmealscapstone.ui.theme.TrackMealsCapstoneTheme
 import com.android.trackmealscapstone.ui.theme.orangePrimary
 import com.android.trackmealscapstone.viewmodel.ProfileViewModel
+import com.android.trackmealscapstone.viewmodel.ProfileViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private lateinit var imagePickerLauncher: ActivityResultLauncher<String>
@@ -50,7 +52,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         window.statusBarColor = getColor(R.color.orange_primary)
 
-        profileViewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
+        val apiService = ApiConfig.getApiService(this)
+        val factory = ProfileViewModelFactory(apiService)
+        profileViewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
+
         imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { profileViewModel.updateProfileImage(it) }
         }
@@ -188,14 +193,14 @@ fun RememberMeCheckbox(
     }
 }
 
-@Preview(showBackground = true, apiLevel = 31)
-@Composable
-fun DefaultPreview() {
-    TrackMealsCapstoneTheme {
-        val navController = rememberNavController()
-        ProfileScreen(navController, onChangePictureClick = {}, viewModel = ProfileViewModel())
-    }
-}
+//@Preview(showBackground = true, apiLevel = 31)
+//@Composable
+//fun DefaultPreview() {
+//    TrackMealsCapstoneTheme {
+//        val navController = rememberNavController()
+//        ProfileScreen(navController, onChangePictureClick = {}, viewModel = ProfileViewModel(), context)
+//    }
+//}
 
 private fun isUserLoggedIn(sharedPreferences: SharedPreferences): Boolean {
     val rememberMe = sharedPreferences.getBoolean("REMEMBER_ME", false)

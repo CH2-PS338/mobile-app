@@ -17,6 +17,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.Response
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
@@ -52,6 +53,7 @@ interface ApiService {
     suspend fun getFactHealths() : Response<FactHealthsResponse>
 
     @PUT("uploadfoto/{id}")
+    @Multipart
     suspend fun updatePhotoProfile(
         @Path("id") userId: Int,
         @Header("Authorization") authToken: String,

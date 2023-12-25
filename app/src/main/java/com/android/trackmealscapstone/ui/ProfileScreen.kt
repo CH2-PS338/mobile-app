@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,9 +56,17 @@ import com.android.trackmealscapstone.ui.theme.orangePrimary
 import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(navController: NavController, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
+fun ProfileScreen(
+    navController: NavController,
+    onChangePictureClick: () -> Unit,
+    viewModel: ProfileViewModel
+) {
     val context = LocalContext.current
     val fullName = getUserNameFromStorage(context)
+
+    LaunchedEffect(key1 = context) {
+        viewModel.loadProfileImageUri(context)
+    }
 
     Scaffold(
         topBar = { ProfileTopAppBar(navController = navController, context = context) },
