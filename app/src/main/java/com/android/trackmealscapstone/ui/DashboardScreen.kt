@@ -75,6 +75,13 @@ data class NavigationItem(
 
 @Composable
 fun YourProgressGraph(nutritionData: NutritionData) {
+    // Define maximum values for each nutrition type
+    val maxCalories = 2500.0
+    val maxProteins = 56.0
+    val maxFats = 70.0
+    val maxCarbs = 300.0
+    val maxMinerals = 1000.0
+
     Column {
         Text(
             text = "Your progress",
@@ -90,21 +97,23 @@ fun YourProgressGraph(nutritionData: NutritionData) {
                 .background(color = Color.White, shape = RoundedCornerShape(16.dp))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                val nutritionValues = listOf(
-                    nutritionData.calories.toDouble(),
-                    nutritionData.proteins,
-                    nutritionData.fats,
-                    nutritionData.carbs,
-                    nutritionData.minerals
+                // Calculate the percentage values based on max values
+                val nutritionPercentages = listOf(
+                    nutritionData.calories.toDouble() / maxCalories,
+                    nutritionData.proteins / maxProteins,
+                    nutritionData.fats / maxFats,
+                    nutritionData.carbs / maxCarbs,
+                    nutritionData.minerals / maxMinerals
                 )
-                val maxData = nutritionValues.maxOf { it }
+
                 val nutritionLabels = listOf("Calories", "Proteins", "Fats", "Carbs", "Minerals")
 
-                nutritionLabels.zip(nutritionValues).forEach { (label, value) ->
+                nutritionLabels.zip(nutritionPercentages).forEach { (label, percentage) ->
                     BoxWithConstraints(modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)) {
-                        val barWidth = (value / maxData) * constraints.maxWidth.toDouble()
+                        val barWidth = percentage * constraints.maxWidth.toDouble()
+
                         Canvas(modifier = Modifier
                             .height(30.dp)
                             .fillMaxWidth()) {
@@ -120,8 +129,18 @@ fun YourProgressGraph(nutritionData: NutritionData) {
                                 cornerRadius = CornerRadius(8.dp.toPx())
                             )
                         }
+                        // Display value on the bar
+                        val displayValue = (percentage * when(label) {
+                            "Calories" -> maxCalories
+                            "Proteins" -> maxProteins
+                            "Fats" -> maxFats
+                            "Carbs" -> maxCarbs
+                            "Minerals" -> maxMinerals
+                            else -> 0.0
+                        }).toInt()
+
                         Text(
-                            text = "$value",
+                            text = "$displayValue",
                             color = Color.White,
                             modifier = Modifier.align(Alignment.Center)
                         )
