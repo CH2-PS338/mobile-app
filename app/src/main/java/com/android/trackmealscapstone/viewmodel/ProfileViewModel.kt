@@ -17,7 +17,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 
-class ProfileViewModel(private val apiService: ApiService) : ViewModel() {
+class ProfileViewModel(private val apiService: ApiService? = null) : ViewModel() {
 
     var profileImageUri by mutableStateOf<Uri?>(null)
         private set
@@ -33,13 +33,15 @@ class ProfileViewModel(private val apiService: ApiService) : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val response = apiService.updatePhotoProfile(userId, "Bearer $authToken", part)
-                if (response.isSuccessful) {
-                    saveProfileImageUri(context, uri)
-                } else {
-                    // handle upload error
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("UploadError", errorBody ?: "Unknown Error")
+                val response = apiService?.updatePhotoProfile(userId, "Bearer $authToken", part)
+                if (response != null) {
+                    if (response.isSuccessful) {
+                        saveProfileImageUri(context, uri)
+                    } else {
+                        // handle upload error
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("UploadError", errorBody ?: "Unknown Error")
+                    }
                 }
             } catch (e: Exception) {
                 // handle exception

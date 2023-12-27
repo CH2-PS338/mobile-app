@@ -93,6 +93,8 @@ fun ScanScreen(navController: NavController, sharedViewModel: SharedViewModel) {
                 Log.e("AddMealException", "Exception adding meal: ${e.message}")
             }
         }
+
+        sharedViewModel.addFoodToHistory(result)
     }
 
     Scaffold(
@@ -229,9 +231,7 @@ fun FoodScannedDialog(
 @Composable
 private fun CameraPreview(cameraController: LifecycleCameraController, lifecycleOwner: LifecycleOwner) {
     AndroidView(
-        modifier = Modifier
-            .fillMaxSize()
-            .height(200.dp),
+        modifier = Modifier.fillMaxSize(),
         factory = { context ->
             PreviewView(context).apply {
                 setBackgroundColor(Color.White.toArgb())
@@ -274,10 +274,7 @@ fun captureImage(
     cameraController.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
         override fun onCaptureSuccess(image: ImageProxy) {
             val bitmap = imageProxyToBitmap(image)
-            // Use TensorFlowHelper to classify the image
-            TensorFLowHelper.classifyImage(context, bitmap) { food ->
-                displayResult(food)
-            }
+            TensorFLowHelper.classifyImage(context, bitmap, displayResult)
             image.close()
         }
 
@@ -293,5 +290,5 @@ fun imageProxyToBitmap(image: ImageProxy): Bitmap {
     buffer.get(bytes)
     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
-    return Bitmap.createScaledBitmap(bitmap, 320, 320, true)
+    return Bitmap.createScaledBitmap(bitmap, TensorFLowHelper.imageSize, TensorFLowHelper.imageSize, true)
 }

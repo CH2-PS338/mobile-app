@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.android.trackmealscapstone.api.ApiConfig
 import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 import com.android.trackmealscapstone.viewmodel.ProfileViewModelFactory
+import com.android.trackmealscapstone.viewmodel.SharedViewModel
 
 class GallerySelectionActivity : ComponentActivity() {
 
@@ -26,6 +27,8 @@ class GallerySelectionActivity : ComponentActivity() {
         val apiService = ApiConfig.getApiService(this)
         val factory = ProfileViewModelFactory(apiService)
         profileViewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
+        val sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
+        val calories = sharedViewModel.totalCalories.value ?: 0
 
         setupImagePickerLauncher()
 
@@ -33,7 +36,13 @@ class GallerySelectionActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(navController, startDestination = "profile") {
                 composable("profile") {
-                    ProfileScreen(navController, onChangePictureClick = { selectImageFromGallery() }, viewModel = profileViewModel)
+                    ProfileScreen(
+                        navController = navController,
+                        onChangePictureClick = { selectImageFromGallery() },
+                        profileViewModel = profileViewModel,
+                        sharedViewModel = sharedViewModel,
+                        caloriesConsumed = calories
+                    )
                 }
             }
         }

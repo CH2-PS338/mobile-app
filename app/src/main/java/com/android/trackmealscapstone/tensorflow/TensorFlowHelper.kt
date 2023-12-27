@@ -16,7 +16,7 @@ object TensorFLowHelper {
 
     val imageSize = 320
 
-    fun classifyImage(context: Context, image: Bitmap, callback : (food : String) -> Unit) {
+    fun classifyImage(context: Context, image: Bitmap, callback: (food: String) -> Unit) {
         val modelFile = "model-fix-final.tflite"
         val interpreter: Interpreter
 
@@ -30,52 +30,47 @@ object TensorFLowHelper {
                 interpreter = Interpreter(modelBuffer)
             }
         } catch (e: IOException) {
-            // Handle exception
             Log.e("TensorFlowHelper", "Error loading model: ${e.message}")
             return
         }
 
         val resizedImage = Bitmap.createScaledBitmap(image, imageSize, imageSize, true)
-        Log.d("TensorFlowHelper", "Resized image dimensions: ${resizedImage.width} x ${resizedImage.height}")
+        val byteBuffer = convertBitmapToByteBuffer(resizedImage)
 
-        val intValues = IntArray(imageSize * imageSize)
-        try {
-            resizedImage.getPixels(intValues, 0, resizedImage.width, 0, 0, resizedImage.width, resizedImage.height)
-        } catch (e: Exception) {
-            Log.e("TensorFlowHelper", "Error in getPixels: ${e.message}")
-            return
-        }
-
-        val inputFeature0 =
-            TensorBuffer.createFixedSize(intArrayOf(1, 320, 320, 3), DataType.FLOAT32)
-        val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3)
-        byteBuffer.order(ByteOrder.nativeOrder())
-        image.getPixels(intValues, 0, image.width, 0, 0, image.width, image.height)
-        var pixel = 0
-        // iterate over each pixel and extract R, G, and B values. Add those values individually to the byte buffer.
-        for (i in 0 until imageSize) {
-            for (j in 0 until imageSize) {
-                val `val` = intValues[pixel++] // RGB
-                byteBuffer.putFloat((`val` shr 16 and 0xFF) * (1f / 255f))
-                byteBuffer.putFloat((`val` shr 8 and 0xFF) * (1f / 255f))
-                byteBuffer.putFloat((`val` and 0xFF) * (1f / 255f))
-            }
-        }
+        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, imageSize, imageSize, 3), DataType.FLOAT32)
         inputFeature0.loadBuffer(byteBuffer)
 
         // Runs model inference and gets result.
-        val outputFeature0: TensorBuffer = TensorBuffer.createFixedSize(intArrayOf(1, 1000), DataType.FLOAT32)
+        val outputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 11), DataType.FLOAT32)
         interpreter.run(inputFeature0.buffer, outputFeature0.buffer)
-        val confidences = outputFeature0.floatArray
-        // find the index of the class with the biggest confidence.
-        var maxPos = 0
-        var maxConfidence = 0f
-        for (i in confidences.indices) {
-            if (confidences[i] > maxConfidence) {
-                maxConfidence = confidences[i]
-                maxPos = i
-            }
+
+        // Decode the output into a human-readable label.
+        val label = decodeOutput(outputFeature0.floatArray)
+        callback.invoke(label)
+
+        interpreter.close()
+    }
+
+    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+        val byteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3)
+        byteBuffer.order(ByteOrder.nativeOrder())
+
+        val intValues = IntArray(imageSize * imageSize)
+        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+
+        for (value in intValues) {
+            val r = ((value shr 16) and 0xFF) / 255.0f
+            val g = ((value shr 8) and 0xFF) / 255.0f
+            val b = (value and 0xFF) / 255.0f
+
+            byteBuffer.putFloat(r)
+            byteBuffer.putFloat(g)
+            byteBuffer.putFloat(b)
         }
+        return byteBuffer
+    }
+
+    private fun decodeOutput(confidences: FloatArray): String {
         val classes = arrayOf(
             "Nasi Putih",
             "Telur Rebus",
@@ -87,9 +82,10 @@ object TensorFLowHelper {
             "Nasi Merah",
             "Jeruk",
             "Alpukat",
-            "Sayur Bayam")
-        callback.invoke(classes[maxPos])
+            "Sayur Bayam"
+        )
 
-        interpreter.close()
+        val maxPos = confidences.indices.maxByOrNull { confidences[it] } ?: -1
+        return if (maxPos == -1) "Unknown" else classes[maxPos]
     }
 }

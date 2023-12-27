@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,15 +25,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.android.trackmealscapstone.api.ApiConfig
 import com.android.trackmealscapstone.response.DataItem
+import com.android.trackmealscapstone.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun ActivityLogScreen(navController: NavController) {
+fun ActivityLogScreen(navController: NavController, sharedViewModel: SharedViewModel) {
     val context = LocalContext.current
+    val foodHistory = sharedViewModel.scannedFoodHistory.value
     val apiService = ApiConfig.getApiService(context)
 
     val mealsState = remember { mutableStateOf<List<DataItem>?>(null) }
@@ -41,11 +45,10 @@ fun ActivityLogScreen(navController: NavController) {
 
     LaunchedEffect(key1 = Unit) {
         val userId = ApiConfig.getUserIdFromStorage(context)
-        val userIdInt = userId.toInt()
         val authToken = "Bearer ${ApiConfig.getTokenFromStorage(context)}"
         coroutineScope.launch {
             try {
-                val response = apiService.getAllUserMeals(userIdInt, authToken)
+                val response = apiService.getAllUserMeals(userId, authToken)
                 if (response.isSuccessful) {
                     mealsState.value = response.body()?.data?.filterNotNull()
                 } else {
@@ -67,19 +70,6 @@ fun ActivityLogScreen(navController: NavController) {
 @Composable
 fun ActivityLogScreenContent(paddingValues: PaddingValues, meals: List<DataItem>?) {
     Column {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            item { ActivityLogList(meals) }
-        }
-    }
-}
-
-@Composable
-fun ActivityLogList(meals: List<DataItem>?) {
-    Column {
         Text(
             text = "Your History",
             style = MaterialTheme.typography.headlineLarge,
@@ -89,18 +79,46 @@ fun ActivityLogList(meals: List<DataItem>?) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        meals?.forEach { meal ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = meal.mealsName ?: "Unknown", style = MaterialTheme.typography.bodyLarge
-                )
-                Text(text = meal.createdAt ?: "Unknown", style = MaterialTheme.typography.bodyLarge)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (meals.isNullOrEmpty()) {
+                item {
+                    Text(
+                        text = "No history available.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                items(meals) { meal ->
+                    FoodHistoryItem(
+                        foodName = meal.mealsName ?: "Unknown",
+                        date = meal.createdAt ?: "Unknown"
+                    )
+                }
             }
-            Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
         }
+    }
+}
+
+@Composable
+fun FoodHistoryItem(foodName: String, date: String) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = foodName, style = MaterialTheme.typography.bodyLarge)
+            Text(text = date, style = MaterialTheme.typography.bodyLarge)
+        }
+        Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
     }
 }

@@ -2,6 +2,8 @@ package com.android.trackmealscapstone.api
 
 import android.content.Context
 import okhttp3.OkHttpClient
+import org.json.JSONException
+import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -35,7 +37,19 @@ object ApiConfig {
 
     fun getUserIdFromStorage(context: Context): Int {
         val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
-        return sharedPreferences.getInt("userId", 1)
+        val jwtToken = sharedPreferences.getString("JWT_TOKEN", null) ?: return -1 // Return an invalid ID if token is not present
+
+        val payload = jwtToken.split(".")[1] // Get the Payload part
+        val decodedBytes = android.util.Base64.decode(payload, android.util.Base64.URL_SAFE)
+        val decodedString = String(decodedBytes, Charsets.UTF_8)
+
+        return try {
+            val jsonObject = JSONObject(decodedString)
+            // Assuming the user ID field is named "userId" and is a string that can be parsed as an integer
+            jsonObject.getString("userId").toInt()
+        } catch (e: Exception) {
+            -1 // Return an invalid ID in case of error
+        }
     }
 
     fun getUserNameFromStorage(context: Context): String {

@@ -49,6 +49,7 @@ fun DashboardScreen(navController: NavController, sharedViewModel: SharedViewMod
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         DashboardContent(innerPadding, healthFactViewModel, nutritionData)
+        sharedViewModel.updateTotalCalories(nutritionData.calories.toInt())
     }
 }
 
@@ -241,4 +242,8 @@ fun HealthFactHeadline(viewModel: HealthFactViewModel) {
             )
         }
     }
+}
+
+fun navigateToProfileWithCalories(navController: NavController, calories: Int) {
+    navController.navigate("profile/$calories")
 }

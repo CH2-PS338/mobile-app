@@ -44,6 +44,7 @@ import com.android.trackmealscapstone.ui.theme.orangePrimary
 import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 import com.android.trackmealscapstone.viewmodel.ProfileViewModelFactory
 import com.android.trackmealscapstone.viewmodel.SharedViewModel
+import androidx.compose.ui.tooling.preview.Preview
 
 class MainActivity : ComponentActivity() {
     private lateinit var imagePickerLauncher: ActivityResultLauncher<String>
@@ -55,7 +56,7 @@ class MainActivity : ComponentActivity() {
 
         val apiService = ApiConfig.getApiService(this)
         val factory = ProfileViewModelFactory(apiService)
-        profileViewModel = ViewModelProvider(this, factory).get(ProfileViewModel::class.java)
+        profileViewModel = ViewModelProvider(this, factory)[ProfileViewModel::class.java]
 
         profileViewModel.loadProfileImageUri(this)
 
@@ -63,7 +64,7 @@ class MainActivity : ComponentActivity() {
             uri?.let { profileViewModel.updateProfileImage(it) }
         }
 
-        val sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+        val sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
         setContent {
             TrackMealsCapstoneTheme {
@@ -79,7 +80,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(navController = navController, startDestination = startDestination) {
                     composable("dashboard") {
-                        DashboardScreen(navController, sharedViewModel) // No scanned food name
+                        DashboardScreen(navController, sharedViewModel)
                     }
 
                     composable(
@@ -90,11 +91,25 @@ class MainActivity : ComponentActivity() {
                         DashboardScreen(navController, sharedViewModel)
                     }
 
-                    composable("scan") { ScanScreen(navController, sharedViewModel) }
-                    composable("activity_log") { ActivityLogScreen(navController) }
-                    composable("profile") {
-                        ProfileScreen(navController, onChangePictureClick = { selectImageFromGallery() }, viewModel = profileViewModel)
+                    composable("scan") {
+                        ScanScreen(navController, sharedViewModel)
                     }
+
+                    composable("activity_log") {
+                        ActivityLogScreen(navController, sharedViewModel)
+                    }
+
+                    composable("profile") {
+                        val calories = sharedViewModel.totalCalories.value ?: 0  // Provide a default value
+                        ProfileScreen(
+                            navController = navController,
+                            onChangePictureClick = { selectImageFromGallery() },
+                            profileViewModel = profileViewModel,
+                            sharedViewModel = sharedViewModel,
+                            caloriesConsumed = calories
+                        )
+                    }
+
                     composable("login") { LoginScreen(navController) }
                     composable("register") { RegisterScreen(navController) }
                 }
@@ -206,6 +221,21 @@ fun RememberMeCheckbox(
             onCheckedChange = onCheckedChange
         )
         Text(text = "Remember Me")
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    TrackMealsCapstoneTheme {
+        val profileViewModel = ProfileViewModel(apiService = null)
+        ProfileScreen(
+            navController = rememberNavController(), // Mock NavController
+            onChangePictureClick = {}, // Empty lambda for click event
+            profileViewModel = profileViewModel, // Provide a mock or actual ViewModel instance
+            sharedViewModel = SharedViewModel(), // Provide a mock or actual ViewModel instance
+            caloriesConsumed = 1500 // Example calorie value
+        )
     }
 }
 

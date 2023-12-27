@@ -35,6 +35,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,25 +56,37 @@ import com.android.trackmealscapstone.R
 import com.android.trackmealscapstone.api.ApiConfig.getUserNameFromStorage
 import com.android.trackmealscapstone.ui.theme.orangePrimary
 import com.android.trackmealscapstone.viewmodel.ProfileViewModel
+import com.android.trackmealscapstone.viewmodel.SharedViewModel
 
 @Composable
 fun ProfileScreen(
     navController: NavController,
     onChangePictureClick: () -> Unit,
-    viewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    sharedViewModel: SharedViewModel,
+    caloriesConsumed: Int?
 ) {
+    val calories = caloriesConsumed ?: 0
     val context = LocalContext.current
     val fullName = getUserNameFromStorage(context)
+    val caloriesConsumed by sharedViewModel.totalCalories.observeAsState(0)
 
     LaunchedEffect(key1 = context) {
-        viewModel.loadProfileImageUri(context)
+        profileViewModel.loadProfileImageUri(context)
     }
 
     Scaffold(
         topBar = { ProfileTopAppBar(navController = navController, context = context) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        ProfileContent(innerPadding, fullName, viewModel.profileImageUri, onChangePictureClick, viewModel)
+        ProfileContent(
+            innerPadding,
+            fullName,
+            profileViewModel.profileImageUri,
+            onChangePictureClick,
+            profileViewModel,
+            caloriesConsumed = caloriesConsumed
+        )
     }
 }
 
@@ -111,7 +125,13 @@ fun ProfileTopAppBar(navController: NavController, context: Context) {
 }
 
 @Composable
-fun ProfileContent(paddingValues: PaddingValues, fullName: String, imageUri: Uri?, onChangePictureClick: () -> Unit, viewModel: ProfileViewModel) {
+fun ProfileContent(
+    paddingValues: PaddingValues,
+    fullName: String,
+    imageUri: Uri?,
+    onChangePictureClick: () -> Unit,
+    viewModel: ProfileViewModel,
+    caloriesConsumed: Int) {
     Column {
         LazyColumn(
             modifier = Modifier
@@ -121,7 +141,7 @@ fun ProfileContent(paddingValues: PaddingValues, fullName: String, imageUri: Uri
         ) {
             // Add item for the profile component with the retrieved full name
             item { ProfileAvatar(fullName = fullName, onChangePictureClick = onChangePictureClick, viewModel = viewModel) }
-            item { CircularGraph(percentage = 0.50F, calories = 10) }
+            item { CircularGraph(percentage = caloriesConsumed / 2500f, calories = caloriesConsumed) }
         }
     }
 }
@@ -181,7 +201,6 @@ fun ProfileAvatar(fullName: String, onChangePictureClick: () -> Unit, viewModel:
     }
 }
 
-
 @Composable
 fun CircularGraph(percentage: Float, calories: Int) {
     Box(contentAlignment = Alignment.Center) {
@@ -224,8 +243,9 @@ fun CircularGraph(percentage: Float, calories: Int) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "You spent 50% less calories\nthan other weeks.",
-                style = MaterialTheme.typography.labelLarge
+                text = "You've consumed ${percentage * 100}%\nof your daily calorie goal.",
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Center
             )
         }
     }
