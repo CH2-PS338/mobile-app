@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.android.trackmealscapstone.R
@@ -76,6 +78,8 @@ fun RegisterScreen(navController: NavController) {
     var emailUserHasTyped by remember { mutableStateOf(false) }
     var passwordUserHasTyped by remember { mutableStateOf(false) }
     var confirmpasswordUserHasTyped by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -131,6 +135,17 @@ fun RegisterScreen(navController: NavController) {
             validateInput = ::isValidPasswordRegister,
             errorMessage = "Password must be at least 8 characters",
             userHasTyped = passwordUserHasTyped,
+            trailingIcon = {
+                val image = if (passwordVisible)
+                    painterResource(id = R.drawable.visibility_icon)
+                else
+                    painterResource(id = R.drawable.visibility_off_icon)
+
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(painter = image, contentDescription = "Toggle Password Visibility")
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
         )
 
         CustomTextField(
@@ -142,7 +157,18 @@ fun RegisterScreen(navController: NavController) {
             label = "Confirm Password",
             validateInput = { isValidConfirmPasswordRegister(password, confirmPassword) },
             errorMessage = "Password do not match",
-            userHasTyped = confirmpasswordUserHasTyped
+            userHasTyped = confirmpasswordUserHasTyped,
+            trailingIcon = {
+                val image = if (confirmPasswordVisible)
+                    painterResource(id = R.drawable.visibility_icon)
+                else
+                    painterResource(id = R.drawable.visibility_off_icon)
+
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(painter = image, contentDescription = "Toggle Password Visibility")
+                }
+            },
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(16.dp))

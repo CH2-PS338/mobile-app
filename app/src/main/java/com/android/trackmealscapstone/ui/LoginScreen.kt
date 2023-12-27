@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -29,6 +31,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -49,6 +53,7 @@ fun LoginScreen(navController: NavController) {
 
     var emailUserHasTyped by remember { mutableStateOf(false) }
     var passwordUserHasTyped by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
     val apiService = ApiConfig.getApiService(context)
@@ -85,7 +90,18 @@ fun LoginScreen(navController: NavController) {
             label = "Password",
             validateInput = ::isValidPasswordLogin,
             errorMessage = "Password must be at least 8 characters",
-            userHasTyped = passwordUserHasTyped
+            userHasTyped = passwordUserHasTyped,
+            trailingIcon = {
+                val image = if (passwordVisible)
+                    painterResource(id = R.drawable.visibility_icon)
+                else
+                    painterResource(id = R.drawable.visibility_off_icon)
+
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(painter = image, contentDescription = "Toggle Password Visibility")
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
         )
         RememberMeCheckbox(
             checked = rememberMe,

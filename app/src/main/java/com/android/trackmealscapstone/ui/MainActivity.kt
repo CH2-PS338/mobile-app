@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -160,19 +161,21 @@ fun CustomTextField(
     label: String,
     validateInput: (String) -> Boolean,
     errorMessage: String,
-    userHasTyped: Boolean
+    userHasTyped: Boolean,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     val isError = !validateInput(value) && userHasTyped
 
     OutlinedTextField(
         value = value,
-        onValueChange = {
-            onValueChange(it)
-        },
+        onValueChange = { onValueChange(it) },
         label = { Text(label) },
         isError = isError,
         singleLine = true,
-        modifier = Modifier.fillMaxWidth().padding(16.dp)
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        trailingIcon = trailingIcon,
+        visualTransformation = visualTransformation
     )
 
     if (isError) {
@@ -228,14 +231,7 @@ fun RememberMeCheckbox(
 @Composable
 fun DefaultPreview() {
     TrackMealsCapstoneTheme {
-        val profileViewModel = ProfileViewModel(apiService = null)
-        ProfileScreen(
-            navController = rememberNavController(), // Mock NavController
-            onChangePictureClick = {}, // Empty lambda for click event
-            profileViewModel = profileViewModel, // Provide a mock or actual ViewModel instance
-            sharedViewModel = SharedViewModel(), // Provide a mock or actual ViewModel instance
-            caloriesConsumed = 1500 // Example calorie value
-        )
+        RegisterScreen(navController = rememberNavController())
     }
 }
 
