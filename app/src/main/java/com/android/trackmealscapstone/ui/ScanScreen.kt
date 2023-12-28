@@ -71,30 +71,35 @@ fun ScanScreen(navController: NavController, sharedViewModel: SharedViewModel) {
     val coroutineScope = rememberCoroutineScope()
     val apiService = ApiConfig.getApiService(context)
 
-    val displayResult: (String) -> Unit = { result ->
-        scannedFoodName.value = result
-        showNotification.value = true
-        Log.d("InferenceResult", "Detected food: $result")
+    // Adjusted to handle a list of DetectedObjects
+    val displayResult: (List<TensorFLowHelper.DetectedObject>) -> Unit = { detectedObjects ->
+        if (detectedObjects.isNotEmpty()) {
+            // For simplicity, taking the first detected object
+            val firstDetectedObject = detectedObjects.first()
+            scannedFoodName.value = firstDetectedObject.label
+            showNotification.value = true
+            Log.d("InferenceResult", "Detected food: ${firstDetectedObject.label}")
 
-        sharedViewModel.updateLastScannedFood(result)
+            sharedViewModel.updateLastScannedFood(firstDetectedObject.label)
 
-        val userId = getUserIdFromStorage(context)
-        val authToken = "Bearer ${ApiConfig.getTokenFromStorage(context)}"
+            val userId = getUserIdFromStorage(context)
+            val authToken = "Bearer ${ApiConfig.getTokenFromStorage(context)}"
 
-        coroutineScope.launch(Dispatchers.IO) {
-            try {
-                val response = apiService.addMeal(userId, authToken, listOf(result))
-                if (response.isSuccessful) {
-                    Log.d("AddMealSuccess", "Meal added: ${response.body()?.data}")
-                } else {
-                    Log.e("AddMealError", "Error adding meal: ${response.errorBody()?.string()}")
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    val response = apiService.addMeal(userId, authToken, listOf(firstDetectedObject.label))
+                    if (response.isSuccessful) {
+                        Log.d("AddMealSuccess", "Meal added: ${response.body()?.data}")
+                    } else {
+                        Log.e("AddMealError", "Error adding meal: ${response.errorBody()?.string()}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("AddMealException", "Exception adding meal: ${e.message}")
                 }
-            } catch (e: Exception) {
-                Log.e("AddMealException", "Exception adding meal: ${e.message}")
             }
-        }
 
-        sharedViewModel.addFoodToHistory(result)
+            sharedViewModel.addFoodToHistory(firstDetectedObject.label)
+        }
     }
 
     Scaffold(
@@ -117,7 +122,7 @@ fun ScanScreen(navController: NavController, sharedViewModel: SharedViewModel) {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScanContent(paddingValues: PaddingValues, navController: NavController, displayResult: (String) -> Unit) {
+fun ScanContent(paddingValues: PaddingValues, navController: NavController, displayResult: (List<TensorFLowHelper.DetectedObject>) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
@@ -268,13 +273,15 @@ fun NoCameraPermissionScreen(cameraPermissionState: PermissionState) {
 fun captureImage(
     cameraController: LifecycleCameraController,
     executor: Executor,
-    displayResult: (String) -> Unit,
+    displayResults: (List<TensorFLowHelper.DetectedObject>) -> Unit,
     context: Context
 ) {
     cameraController.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
         override fun onCaptureSuccess(image: ImageProxy) {
             val bitmap = imageProxyToBitmap(image)
-            TensorFLowHelper.classifyImage(context, bitmap, displayResult)
+            TensorFLowHelper.detectObjects(context, bitmap) { detectedObjects ->
+                displayResults(detectedObjects)
+            }
             image.close()
         }
 

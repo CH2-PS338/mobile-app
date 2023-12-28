@@ -37,7 +37,7 @@ import com.android.trackmealscapstone.viewmodel.SharedViewModel
 import androidx.compose.runtime.livedata.observeAsState
 
 @Composable
-fun DashboardScreen(navController: NavController, sharedViewModel: SharedViewModel) {
+fun DashboardScreen(navController: NavController, sharedViewModel: SharedViewModel, scannedFoodName: String) {
     val context = LocalContext.current
     val healthFactViewModel = viewModel {
         HealthFactViewModel(context.applicationContext as Context)

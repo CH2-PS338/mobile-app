@@ -1,32 +1,31 @@
 package com.android.trackmealscapstone.tensorflow
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import android.content.Context
-import android.util.Log
 
 object TensorFLowHelper {
 
     val imageSize = 320
+    const val MIN_CONFIDENCE = 0.5f // Define a threshold for confidence
 
-    fun classifyImage(context: Context, image: Bitmap, callback: (food: String) -> Unit) {
+    fun detectObjects(context: Context, image: Bitmap, callback: (detectedObjects: List<DetectedObject>) -> Unit) {
         val modelFile = "model-fix-final.tflite"
         val interpreter: Interpreter
 
         try {
             context.assets.openFd(modelFile).use { fileDescriptor ->
-                val inputStream = fileDescriptor.createInputStream()
-                val fileChannel = inputStream.channel
-                val startOffset = fileDescriptor.startOffset
-                val declaredLength = fileDescriptor.declaredLength
-                val modelBuffer: MappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+                val modelBuffer: MappedByteBuffer = fileDescriptor.createInputStream().channel.map(
+                    FileChannel.MapMode.READ_ONLY,
+                    fileDescriptor.startOffset,
+                    fileDescriptor.declaredLength
+                )
                 interpreter = Interpreter(modelBuffer)
             }
         } catch (e: IOException) {
@@ -36,17 +35,24 @@ object TensorFLowHelper {
 
         val resizedImage = Bitmap.createScaledBitmap(image, imageSize, imageSize, true)
         val byteBuffer = convertBitmapToByteBuffer(resizedImage)
+        val outputScores = Array(1) { FloatArray(10) }
+        val outputs = mapOf(
+            0 to outputScores // Update this based on the model's actual output
+        )
 
-        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, imageSize, imageSize, 3), DataType.FLOAT32)
-        inputFeature0.loadBuffer(byteBuffer)
+        interpreter.runForMultipleInputsOutputs(arrayOf(byteBuffer), outputs)
 
-        // Runs model inference and gets result.
-        val outputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 11), DataType.FLOAT32)
-        interpreter.run(inputFeature0.buffer, outputFeature0.buffer)
+        // Process the output to extract detected objects
+        val detectedObjects = mutableListOf<DetectedObject>()
+        for (i in outputScores[0].indices) {
+            val score = outputScores[0][i]
+            if (score > MIN_CONFIDENCE) {
+                val classLabel = decodeLabel(i) // Assuming the index represents the class
+                detectedObjects.add(DetectedObject(classLabel, FloatArray(4), score)) // Placeholder for boundingBox
+            }
+        }
 
-        // Decode the output into a human-readable label.
-        val label = decodeOutput(outputFeature0.floatArray)
-        callback.invoke(label)
+        callback.invoke(detectedObjects)
 
         interpreter.close()
     }
@@ -70,22 +76,14 @@ object TensorFLowHelper {
         return byteBuffer
     }
 
-    private fun decodeOutput(confidences: FloatArray): String {
+    private fun decodeLabel(classIdx: Int): String {
+        // Replace this with your actual labels
         val classes = arrayOf(
-            "Nasi Putih",
-            "Telur Rebus",
-            "Telur Goreng",
-            "Dada Ayam",
-            "Tumis Kangkung",
-            "Tempe Goreng",
-            "Salmon",
-            "Nasi Merah",
-            "Jeruk",
-            "Alpukat",
-            "Sayur Bayam"
+            "Nasi Putih", "Telur Rebus", "Telur Goreng", "Dada Ayam", "Tumis Kangkung",
+            "Tempe Goreng", "Salmon", "Nasi Merah", "Jeruk", "Alpukat", "Sayur Bayam"
         )
-
-        val maxPos = confidences.indices.maxByOrNull { confidences[it] } ?: -1
-        return if (maxPos == -1) "Unknown" else classes[maxPos]
+        return classes.getOrElse(classIdx) { "Unknown" }
     }
+
+    data class DetectedObject(val label: String, val boundingBox: FloatArray, val confidence: Float)
 }

@@ -46,6 +46,7 @@ import com.android.trackmealscapstone.viewmodel.ProfileViewModel
 import com.android.trackmealscapstone.viewmodel.ProfileViewModelFactory
 import com.android.trackmealscapstone.viewmodel.SharedViewModel
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
 
 class MainActivity : ComponentActivity() {
     private lateinit var imagePickerLauncher: ActivityResultLauncher<String>
@@ -81,15 +82,15 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(navController = navController, startDestination = startDestination) {
                     composable("dashboard") {
-                        DashboardScreen(navController, sharedViewModel)
+                        DashboardScreen(navController, sharedViewModel, "")
                     }
 
                     composable(
                         "dashboardWithFood/{scannedFoodName}",
-                        arguments = listOf(navArgument("scannedFoodName") { defaultValue = "" })
+                        arguments = listOf(navArgument("scannedFoodName") { type = NavType.StringType })
                     ) { backStackEntry ->
-                        val scannedFoodName = backStackEntry.arguments?.getString("scannedFoodName")
-                        DashboardScreen(navController, sharedViewModel)
+                        val scannedFoodName = backStackEntry.arguments?.getString("scannedFoodName") ?: ""
+                        DashboardScreen(navController, sharedViewModel, scannedFoodName)
                     }
 
                     composable("scan") {
